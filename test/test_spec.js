@@ -460,8 +460,6 @@ describe('pipe behaviour', function ()
             fw.remove_peer(dest_stream1, false);
             fw.remove_peer(dest_stream2, false);
 
-            var error = new Error("couldn't keep up");
-
             fw = new FastestWritable(
             {
                 highWaterMark: 1,
@@ -476,7 +474,7 @@ describe('pipe behaviour', function ()
             {
                 process.nextTick(function ()
                 {
-                    expect(dest_stream2._writableState.ended).to.be.false;
+                    expr(expect(dest_stream2._writableState.ended).to.be.false);
                     cb();
                 });
             });
