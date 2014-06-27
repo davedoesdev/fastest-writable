@@ -1,6 +1,6 @@
 {
   "name": "fastest-writable",
-  "description": "Node.js writable stream which goes at the speed of its fastest peer and ends peers which can't keep up",
+  "description": "Node.js Writable stream which goes at the speed of its fastest peer and ends peers which can't keep up",
   "version": "0.0.1",
   "homepage": "https://github.com/davedoesdev/fastest-writable",
   "author": {
