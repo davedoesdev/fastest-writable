@@ -31,7 +31,7 @@
   },
   "keywords": [
     "stream",
-    "duplex",
+    "writable",
     "high-water mark"
   ],
   "engines": {
