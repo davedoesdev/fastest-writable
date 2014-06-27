@@ -88,7 +88,7 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 - `{Object} [options]` Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
 
 
-  - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event.
+  - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
 
 <sub>Go: [TOC](#tableofcontents)</sub>
 
@@ -98,7 +98,7 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 
 > Add a peer [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_class_stream_writable) to the list of peers to which data will be written.
 
-When [`writable.write`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_write_chunk_encoding_callback) is called on this `FastestWritable` object, the data is written to every peer. `FastestWritable` drains when _any_ of its peers drain. When `writable.write` is called again, [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) is called on any peer which hasn't drained from the previous `writable.write` call.
+When [`writable.write`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_write_chunk_encoding_callback) is called on this `FastestWritable` object, the data is written to every peer. `FastestWritable` drains when _at least one_ of its peers drains. When `writable.write` is called again, [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) is called on any peer which hasn't drained from the previous `writable.write` call.
 
 If this `FastestWritable` object has no peer `Writable`s then it drains immediately.
 
@@ -130,7 +130,7 @@ If this `FastestWritable` object has no peer `Writable`s then it drains immediat
 
 A `FastestWritable` object emits an `empty` event when it has no more `Writable` objects in its list of peers. 
 
-Note that while a `FastestWritable` object is empty, it always drained and throws any data it receives away.
+Note that when a `FastestWritable` object is empty, it is always drained and throws any data it receives away.
 
 You could, for example, [`end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) the `FastestWritable` object when `empty` is emitted.
 
@@ -142,7 +142,7 @@ You could, for example, [`end`](http://nodejs.org/docs/v0.11.13/api/stream.html#
 
 A `FastestWritable` object emits a `waiting` event when it's waiting for any of its peers to drain.
 
-Once any peer has drained, the `FastestWritable` object will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
+Once at least one peer has drained, the `FastestWritable` object will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
 
 **Parameters:**
 
