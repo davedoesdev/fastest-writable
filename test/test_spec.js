@@ -454,6 +454,39 @@ describe('pipe behaviour', function ()
             expect(dest_stream2.write.callCount).to.equal(0);
         });
 
+        it('should support emitting laggard event instead of ending peer', function (cb)
+        {
+            source_stream.unpipe(fw);
+            fw.remove_peer(dest_stream1, false);
+            fw.remove_peer(dest_stream2, false);
+
+            var error = new Error("couldn't keep up");
+
+            fw = new FastestWritable(
+            {
+                highWaterMark: 1,
+                emit_laggard: true
+            });
+            sinon.spy(fw, 'write');
+            source_stream.pipe(fw);
+            fw.add_peer(dest_stream1);
+            fw.add_peer(dest_stream2);
+
+            dest_stream2.on('laggard', function ()
+            {
+                process.nextTick(function ()
+                {
+                    expect(dest_stream2._writableState.ended).to.be.false;
+                    cb();
+                });
+            });
+
+            // write to source
+            expr(expect(source_stream.write('first')).to.be.true);
+            dest_stream1.callbacks[0]();
+            expr(expect(source_stream.write('second')).to.be.true);
+        });
+
         it('should support removing peers', function (cb)
         {
             fw.on('empty', function ()

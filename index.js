@@ -27,7 +27,7 @@ fw.add_peer(dest2);
 source.write('foo');
 assert.equal(dest1.read().toString(), 'foo');
 source.write('bar');
-// fw drain emitted next tick
+// drain emitted next tick
 process.nextTick(function ()
 {
     assert(dest2._writableState.ended);
@@ -87,6 +87,8 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 @param {Object} [options] Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
 
 - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
+
+- `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any stream which can't keep up _instead of_ ending the stream. Defaults to `false`.
 */
 
 function FastestWritable(options)
@@ -94,6 +96,7 @@ function FastestWritable(options)
     stream.Writable.call(this, options);
 
     options = options || {};
+    this._options = options;
 
     this._peers = [];
 
@@ -103,7 +106,7 @@ function FastestWritable(options)
     {
         while (ths._peers.length > 0)
         {
-            ths._end_peer(0, ths._peers[0], options.end_peers_on_finish);
+            ths._end_peer(0, ths._peers[0], options.end_peers_on_finish, false);
         }
     });
 }
@@ -166,17 +169,21 @@ FastestWritable.prototype.remove_peer = function (peer, end)
 
         if (info.peer === peer)
         {
-            return this._end_peer(i, info, end);
+            return this._end_peer(i, info, end, false);
         }
     }
 };
 
-FastestWritable.prototype._end_peer = function (i, info, end)
+FastestWritable.prototype._end_peer = function (i, info, end, laggard)
 {
     this._peers.splice(i, 1);
     info.removed = true;
 
-    if (end !== false)
+    if (laggard)
+    {
+        info.peer.emit('laggard');
+    }
+    else if (end !== false)
     {
         info.peer.end();
     }
@@ -229,7 +236,7 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
 
         if (info.waiting)
         {
-            this._end_peer(i, info);
+            this._end_peer(i, info, true, this._options.emit_laggard);
             i -= 1; // info has been removed from this._peers
         }
         else if (!info.peer.write(chunk, encoding))
