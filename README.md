@@ -76,6 +76,7 @@ grunt lint
 - <a name="toc_fastestwritableprototyperemove_peerpeer-end"></a>[FastestWritable.prototype.remove_peer](#fastestwritableprototyperemove_peerpeer-end)
 - <a name="toc_fastestwritableeventsempty"></a><a name="toc_fastestwritableevents"></a>[FastestWritable.events.empty](#fastestwritableeventsempty)
 - <a name="toc_fastestwritableeventswaitingstop_waiting"></a>[FastestWritable.events.waiting](#fastestwritableeventswaitingstop_waiting)
+- <a name="toc_fastestwritableeventsreadynum_waiting-total-drain"></a>[FastestWritable.events.ready](#fastestwritableeventsreadynum_waiting-total-drain)
 
 ## FastestWritable([options])
 
@@ -144,11 +145,31 @@ You could, for example, [`end`](http://nodejs.org/docs/v0.11.13/api/stream.html#
 
 A `FastestWritable` object emits a `waiting` event when it's waiting for any of its peers to drain.
 
-Once at least one peer has drained, the `FastestWritable` object will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
+Once at least one peer has drained, the `FastestWritable` object will emit a [`ready`](#fastestwritable-events-waiting) event. If there are no `ready` listeners then it will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
 
 **Parameters:**
 
 - `{Function} stop_waiting` Call this function to force the `FastestWritable` object to drain without waiting for any of its peers to drain. You could use this to implement a timeout, for example. It's safe to call `stop_waiting` more than once or even after a peer has drained of its own accord.
+
+<sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
+
+## FastestWritable.events.ready(num_waiting, total, drain)
+
+> `ready` event
+
+A `FastestWritable` object emits a `ready` event when at least one of its peers drains. It gives you the ability to delay the `FastestWritable` object emitting `drain`.
+
+**Parameters:**
+
+- `{Integer} num_waiting` Number of peers which still haven't drained. If `num_waiting === 0` then you'll get no more `ready` events.
+
+
+
+- `{Integer} total` Number of peers which received the data.
+
+
+
+- `{Function} drain` Call this function to let the `FastestWritble` object drain without waiting for any more of its peers to drain. It's safe to call `drain` more than once.
 
 <sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
 

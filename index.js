@@ -196,7 +196,7 @@ FastestWritable.prototype._end_peer = function (i, info, end, laggard)
 
 FastestWritable.prototype._write = function (chunk, encoding, cb)
 {
-    var num_waiting = 0, i, info, drain;
+    var ths = this, num_peers, num_waiting = 0, i, info, drain;
 
     function callback()
     {
@@ -205,6 +205,14 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
             var f = cb;
             cb = null;
             f();
+        }
+    }
+
+    function ready()
+    {
+        if (cb && !ths.emit('ready', num_waiting, num_peers, callback))
+        {
+            callback();
         }
     }
 
@@ -220,11 +228,18 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
             info.peer.removeListener('drain', f);
             info.peer.removeListener('finish', f);
 
-            if (info.removed) { return; } // doesn't mean it's ready for data!
+            if (info.removed)
+            {
+                if (num_waiting === 0)
+                {
+                    ready();
+                }
+
+                return; // doesn't mean it's ready for data!
+            }
 
             info.waiting = false;
-
-            callback();
+            ready();
         };
         
         return f;
@@ -249,10 +264,12 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
         }
     }
 
-    if ((this._peers.length === 0) || (num_waiting < this._peers.length))
+    num_peers = this._peers.length;
+
+    if ((num_peers === 0) || (num_waiting < num_peers))
     {
         // at least one peer is ready or there are no peers
-        return callback();
+        return ready();
     }
 
     this.emit('waiting', callback);

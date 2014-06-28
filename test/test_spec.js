@@ -593,6 +593,71 @@ describe('pipe behaviour', function ()
             expr(expect(source_stream.write('first')).to.be.true);
         });
 
+        it('should emit drain event when all waiting peers finish', function (cb)
+        {
+            fw.on('waiting', function ()
+            {
+                fw.on('drain', cb);
+                dest_stream1.end();
+                dest_stream2.end();
+                dest_stream1.callbacks[0]();
+                dest_stream2.callbacks[0]();
+            });
+
+            // write to source
+            expr(expect(source_stream.write('first')).to.be.true);
+        });
+
+        it('should emit ready event while waiting as peers drain', function (cb)
+        {
+            fw.once('waiting', function (stop_waiting)
+            {
+                fw.once('ready', function (nwaiting, total, done)
+                {
+                    expect(nwaiting).to.equal(1);
+                    expect(total).to.equal(2);
+                    expect(done).to.equal(stop_waiting);
+
+                    fw.once('ready', function (nwaiting2, total2, done2)
+                    {
+                        expect(nwaiting2).to.equal(0);
+                        expect(total2).to.equal(2);
+                        expect(done2).to.equal(done);
+
+                        expr(expect(source_stream.write('second')).to.be.true);
+                        expect(fw.write.callCount).to.equal(1);
+                        done2();
+                        process.nextTick(function ()
+                        {
+                            expect(fw.write.callCount).to.equal(2);
+                            cb();
+                        });
+                    });
+
+                    dest_stream2.callbacks[0]();
+                });
+
+                dest_stream1.callbacks[0]();
+            });
+
+            expr(expect(source_stream.write('first')).to.be.true);
+        });
+
+        it('should emit ready event straight away if some peers ready', function (cb)
+        {
+            dest_stream1._writableState.highWaterMark = 1024;
+            dest_stream2._writableState.highWaterMark = 1024;
+
+            fw.on('ready', function (nwaiting, total)
+            {
+                expect(nwaiting).to.equal(0);
+                expect(total).to.equal(2);
+                cb();
+            });
+
+            expr(expect(source_stream.write('first')).to.be.true);
+        });
+
         it('should support dummy data event on source', function (cb)
         {
             // pre-fill the streams
