@@ -145,7 +145,7 @@ You could, for example, [`end`](http://nodejs.org/docs/v0.11.13/api/stream.html#
 
 A `FastestWritable` object emits a `waiting` event when it's waiting for any of its peers to drain.
 
-Once at least one peer has drained, the `FastestWritable` object will emit a [`ready`](#fastestwritable-events-waiting) event. If there are no `ready` listeners then it will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
+Once at least one peer has drained, the `FastestWritable` object will emit a [`ready`](#fastestwritableeventsreadynum_waiting-total-drain) event. If there are no `ready` listeners then it will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
 
 **Parameters:**
 
@@ -157,15 +157,15 @@ Once at least one peer has drained, the `FastestWritable` object will emit a [`r
 
 > `ready` event
 
-A `FastestWritable` object emits a `ready` event when at least one of its peers drains. It gives you the ability to delay the `FastestWritable` object emitting `drain`.
+A `FastestWritable` object emits a `ready` event when one of its peers drains. It gives you the ability to control when the `FastestWritable` object emits `drain`.
 
 **Parameters:**
 
-- `{Integer} num_waiting` Number of peers which still haven't drained. If `num_waiting === 0` then you'll get no more `ready` events.
+- `{Integer} num_waiting` Number of peers which still haven't drained for the last data written to the `FastestWritable` object.
 
 
 
-- `{Integer} total` Number of peers which received the data.
+- `{Integer} total` Number of peers which received the last data written to the `FastestWritable` object.
 
 
 
