@@ -161,11 +161,11 @@ A `FastestWritable` object emits a `ready` event when one of its peers drains. I
 
 **Parameters:**
 
-- `{Integer} num_waiting` Number of peers which still haven't drained for the last data written to the `FastestWritable` object.
+- `{Integer} num_waiting` Number of peers which still haven't drained for the latest data written to the `FastestWritable` object.
 
 
 
-- `{Integer} total` Number of peers which received the last data written to the `FastestWritable` object.
+- `{Integer} total` Number of peers which received the latest data written to the `FastestWritable` object.
 
 
 

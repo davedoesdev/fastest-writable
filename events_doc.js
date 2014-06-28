@@ -28,9 +28,9 @@ FastestWritable.events.waiting = function (stop_waiting) { return undefined; };
 
 A `FastestWritable` object emits a `ready` event when one of its peers drains. It gives you the ability to control when the `FastestWritable` object emits `drain`.
 
-@param {Integer} num_waiting Number of peers which still haven't drained for the last data written to the `FastestWritable` object.
+@param {Integer} num_waiting Number of peers which still haven't drained for the latest data written to the `FastestWritable` object.
 
-@param {Integer} total Number of peers which received the last data written to the `FastestWritable` object.
+@param {Integer} total Number of peers which received the latest data written to the `FastestWritable` object.
 
 @param {Function} drain Call this function to let the `FastestWritble` object drain without waiting for any more of its peers to drain. It's safe to call `drain` more than once.
 */
