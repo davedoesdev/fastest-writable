@@ -28,15 +28,7 @@ module.exports = function (grunt)
             input: ['index.js', 'events_doc.js'],
             output: 'README.md',
             fullSourceDescription: true,
-            extraHeadingLevels: 1,
-            sections: {
-                'module.exports': '\n## Opening a key store',
-                'PubKeyStore.prototype.add_pub_key': '\n## PubKeyStore\n### Adding and removing keys',
-                'PubKeyStore.prototype.get_pub_key_by_uri': '\n### Retrieving keys',
-                'PubKeyStore.prototype.close': '\n### Lifecycle',
-                'PubKeyStore.prototype.deploy': '\n### Replication (PouchDB only)',
-                'PubKeyStore.events.change': '\n### Events'
-            }
+            extraHeadingLevels: 1
         },
 
         exec: {
