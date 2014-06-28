@@ -145,7 +145,7 @@ You could, for example, [`end`](http://nodejs.org/docs/v0.11.13/api/stream.html#
 
 A `FastestWritable` object emits a `waiting` event when it's waiting for any of its peers to drain.
 
-Once at least one peer has drained, the `FastestWritable` object will emit a [`ready`](#fastestwritableeventsreadynum_waiting-total-drain) event. If there are no `ready` listeners then it will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
+When a peer drains, the `FastestWritable` object will emit a [`ready`](#fastestwritableeventsreadynum_waiting-total-drain) event. If there are no listeners for the `ready` event then it will emit a [`drain`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_drain) event.
 
 **Parameters:**
 
