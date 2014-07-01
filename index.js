@@ -109,6 +109,22 @@ function FastestWritable(options)
             ths._end_peer(0, ths._peers[0], options.end_peers_on_finish, false);
         }
     });
+
+    this.on('pipe', function (src)
+    {
+        this._peers.forEach(function (info)
+        {
+            info.peer.emit('pipe', src);
+        });
+    });
+
+    this.on('unpipe', function (src)
+    {
+        this._peers.forEach(function (info)
+        {
+            info.peer.emit('unpipe', src);
+        });
+    });
 }
 
 util.inherits(FastestWritable, stream.Writable);

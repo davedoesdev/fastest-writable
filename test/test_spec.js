@@ -5,7 +5,8 @@
          beforeEach: false,
          TestWritable: false,
          source_stream: false,
-         FastestWritable: false */
+         FastestWritable: false,
+         stream: false */
 /*jslint node: true, nomen: true */
 "use strict";
 
@@ -746,6 +747,40 @@ describe('pipe behaviour', function ()
                 expr(expect(finished1).to.be.true);
                 expr(expect(finished2).to.be.true);
             }, 2000);
+        });
+
+        it('should pass on pipe and unpipe events', function (cb)
+        {
+            var piped1 = false,
+                piped2 = false,
+                unpiped1 = false,
+                source_stream2 = new stream.PassThrough();
+
+            dest_stream1.on('pipe', function ()
+            {
+                piped1 = true;
+            });
+
+            dest_stream2.on('pipe', function ()
+            {
+                piped2 = true;
+            });
+
+            dest_stream1.on('unpipe', function ()
+            {
+                unpiped1 = true;
+            });
+
+            dest_stream2.on('unpipe', function ()
+            {
+                expr(expect(piped1).to.be.true);
+                expr(expect(piped2).to.be.true);
+                expr(expect(unpiped1).to.be.true);
+                cb();
+            });
+
+            source_stream2.pipe(fw);
+            source_stream2.unpipe(fw);
         });
     });
 });
