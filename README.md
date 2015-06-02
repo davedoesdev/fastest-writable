@@ -57,7 +57,7 @@ grunt test
 grunt coverage
 ```
 
-[Instanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://githubraw.herokuapp.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
+[Instanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://rawgit.davedoesdev.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
 
 Coveralls page is [here](https://coveralls.io/r/davedoesdev/fastest-writable).
 
@@ -86,9 +86,7 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 
 **Parameters:**
 
-- `{Object} [options]` Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
-
-
+- `{Object} [options]` Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property: 
   - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
 
   - `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any peers which can't keep up _instead of_ ending them. Defaults to `false`.
@@ -117,10 +115,7 @@ If this `FastestWritable` object has no peer `Writable`s then it drains immediat
 
 **Parameters:**
 
-- `{stream.Writable} peer` Peer `Writable` to remove.
-
-
-
+- `{stream.Writable} peer` Peer `Writable` to remove. 
 - `{Boolean} end` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on the peer once it's been removed from the list. Defaults to `true`.
 
 <sub>Go: [TOC](#tableofcontents) | [FastestWritable.prototype](#toc_fastestwritableprototype)</sub>
@@ -161,14 +156,8 @@ A `FastestWritable` object emits a `ready` event when one of its peers drains. I
 
 **Parameters:**
 
-- `{Integer} num_waiting` Number of peers which still haven't drained for the latest data written to the `FastestWritable` object.
-
-
-
-- `{Integer} total` Number of peers which received the latest data written to the `FastestWritable` object.
-
-
-
+- `{Integer} num_waiting` Number of peers which still haven't drained for the latest data written to the `FastestWritable` object. 
+- `{Integer} total` Number of peers which received the latest data written to the `FastestWritable` object. 
 - `{Function} drain` Call this function to let the `FastestWritble` object drain without waiting for any more of its peers to drain. It's safe to call `drain` more than once.
 
 <sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>

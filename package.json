@@ -1,7 +1,7 @@
 {
   "name": "fastest-writable",
   "description": "Node.js Writable stream which goes at the speed of its fastest peer and ends peers which can't keep up",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "https://github.com/davedoesdev/fastest-writable",
   "author": {
     "name": "David Halls",
@@ -15,12 +15,7 @@
   "bugs": {
     "url": "https://github.com/davedoesdev/fastest-writable/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/davedoesdev/fastest-writable/blob/master/LICENCE"
-    }
-  ],
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "grunt lint test",
@@ -42,13 +37,13 @@
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-cli": "~0.1.13",
-    "grunt-jslint": "~1.1.12",
-    "grunt-cafe-mocha": "~0.1.12",
-    "grunt-apidox": "~0.1.4",
-    "chai": "~1.9.1",
-    "istanbul": "~0.2.11",
-    "grunt-exec": "~0.4.5",
-    "coveralls": "~2.10.0",
-    "sinon": "~1.10.2"
+    "grunt-jslint": "~1.1.14",
+    "grunt-cafe-mocha": "~0.1.13",
+    "grunt-apidox": "~0.1.7",
+    "chai": "~2.3.0",
+    "istanbul": "~0.3.14",
+    "grunt-exec": "~0.4.6",
+    "coveralls": "~2.11.2",
+    "sinon": "~1.14.1"
   }
 }
