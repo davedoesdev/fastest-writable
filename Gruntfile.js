@@ -5,22 +5,15 @@ module.exports = function (grunt)
 {
     grunt.initConfig(
     {
-        jslint: {
-            all: {
-                src: [ '*.js', 'test/**/*.js' ],
-                directives: {
-                    white: true
-                }
-            }
+        jshint: {
+            src: [ '*.js', 'test/**/*.js' ]
         },
 
-        cafemocha: {
-            default: {
-                src: ['test/*.js'],
-                options: {
-                    timeout: 10000,
-                    bail: true
-                }
+        mochaTest: {
+            src: ['test/*.js'],
+            options: {
+                timeout: 10000,
+                bail: true
             }
         },
 
@@ -31,31 +24,30 @@ module.exports = function (grunt)
             extraHeadingLevels: 1
         },
 
-        exec: {
+        shell: {
             cover: {
-                cmd: './node_modules/.bin/istanbul cover ./node_modules/.bin/grunt -- test --cover',
-                maxBuffer: 10000 * 1024
+                command: './node_modules/.bin/istanbul cover ./node_modules/.bin/grunt -- test --cover'
             },
 
             check_cover: {
-                cmd: './node_modules/.bin/istanbul check-coverage --statement 100 --branch 100 --function 100 --line 100'
+                command: './node_modules/.bin/istanbul check-coverage --statement 100 --branch 100 --function 100 --line 100'
             },
 
             coveralls: {
-                cmd: 'cat coverage/lcov.info | coveralls'
+                command: 'cat coverage/lcov.info | coveralls'
             }
         }
     });
     
-    grunt.loadNpmTasks('grunt-jslint');
-    grunt.loadNpmTasks('grunt-cafe-mocha');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-apidox');
-    grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks('grunt-shell');
 
-    grunt.registerTask('lint', 'jslint:all');
-    grunt.registerTask('test', 'cafemocha:default');
+    grunt.registerTask('lint', 'jshint');
+    grunt.registerTask('test', 'mochaTest');
     grunt.registerTask('docs', 'apidox');
-    grunt.registerTask('coverage', ['exec:cover', 'exec:check_cover']);
-    grunt.registerTask('coveralls', 'exec:coveralls');
-    grunt.registerTask('default', ['jslint', 'cafemocha']);
+    grunt.registerTask('coverage', ['shell:cover', 'shell:check_cover']);
+    grunt.registerTask('coveralls', 'shell:coveralls');
+    grunt.registerTask('default', ['lint', 'test']);
 };
