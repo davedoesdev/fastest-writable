@@ -1,7 +1,6 @@
 /*global beforeEach: false,
          stream: false,
          util: false */
-/*jslint node: true, nomen: true */
 "use strict";
 
 global.util = require('util');
@@ -23,12 +22,10 @@ function TestWritable(options)
 
 util.inherits(TestWritable, stream.Writable);
 
-/*jslint unparam: true */
 TestWritable.prototype._write = function (chunk, encoding, callback)
 {
     this.callbacks.unshift(callback);
 };
-/*jslint unparam: false */
 
 global.TestWritable = TestWritable;
 

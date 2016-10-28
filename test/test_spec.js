@@ -7,7 +7,6 @@
          source_stream: false,
          FastestWritable: false,
          stream: false */
-/*jslint node: true, nomen: true */
 "use strict";
 
 function expr(v) { return v; }
@@ -363,32 +362,52 @@ describe('pipe behaviour', function ()
             });
         });
 
-        it('should propagate errors', function (cb)
+        it('should propagate errors from peer', function (cb)
         {
-            fw.on('error', function (err)
+            fw.on('error', function (err, s)
             {
                 expect(err.message).to.equal('there was an error');
+                expect(s).to.equal(dest_stream1);
                 cb();
             });
 
             dest_stream1.emit('error', new Error('there was an error'));
         });
 
-        it('should propagate errors after peer has ended', function (cb)
+        it('should not propagate errors from peer after peer has ended', function (cb)
         {
-            fw.on('error', function (err)
+            fw.on('error', function (err, s)
+            {
+                cb(new Error('should not be called'));
+            });
+
+            dest_stream1.on('finish', function ()
+            {
+                this.on('error', function (err)
+                {
+                    setTimeout(function ()
+                    {
+                        expect(err.message).to.equal('there was an error');
+                        cb();
+                    }, 500);
+                });
+
+                this.emit('error', new Error('there was an error'));
+            });
+
+            dest_stream1.end();
+        });
+
+        /*it.only('should propagate errors to peer', function (cb)
+        {
+            dest_stream1.on('error', function (err)
             {
                 expect(err.message).to.equal('there was an error');
                 cb();
             });
 
-            dest_stream1.on('finish', function ()
-            {
-                dest_stream1.emit('error', new Error('there was an error'));
-            });
-
-            dest_stream1.end();
-        });
+            fw.emit('error', new Error('there was an error'));
+        });*/
 
         it('should handle peers finishing', function ()
         {

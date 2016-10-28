@@ -6,7 +6,6 @@ Node.js [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_clas
 - Alternative to [`readable.pipe`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_readable_pipe_destination_options) which goes at the rate of the slowest peer.
 - Peers which aren't drained when a write occurs are ended.
 - With no peers added, `fastest-writable` consumes data as fast as it is written and throws it away.
-- Requires Node 0.11 (stream behaviour seems to change between every release and I'm targetting 0.12).
 - Full set of unit tests with 100% coverage.
 
 Example:
@@ -70,7 +69,6 @@ grunt lint
 
 # API
 */
-/*jslint node: true, nomen: true */
 "use strict";
 
 var stream = require('stream'),
@@ -98,33 +96,43 @@ function FastestWritable(options)
     options = options || {};
     this._options = options;
 
-    this._peers = [];
+    this._peers = new Map();
 
     var ths = this;
 
     this.on('finish', function ()
     {
-        while (ths._peers.length > 0)
+        for (var peer of ths._peers.keys())
         {
-            ths._end_peer(0, ths._peers[0], options.end_peers_on_finish, false);
+            ths._end_peer(peer, options.end_peers_on_finish, false);
         }
     });
 
     this.on('pipe', function (src)
     {
-        this._peers.forEach(function (info)
+        for (var peer of ths._peers.keys())
         {
-            info.peer.emit('pipe', src);
-        });
+            peer.emit('pipe', src);
+        }
     });
 
     this.on('unpipe', function (src)
     {
-        this._peers.forEach(function (info)
+        for (var peer of ths._peers.keys())
         {
-            info.peer.emit('unpipe', src);
-        });
+            peer.emit('unpipe', src);
+        }
     });
+
+    this._finish = function ()
+    {
+        ths.remove_peer(this, false);
+    };
+
+    this._error = function (err)
+    {
+        ths.emit('error', err, this);
+    };
 }
 
 util.inherits(FastestWritable, stream.Writable);
@@ -140,31 +148,12 @@ If this `FastestWritable` object has no peer `Writable`s then it drains immediat
 */
 FastestWritable.prototype.add_peer = function (peer)
 {
-    var ths = this, info = {
-        peer: peer,
-        waiting: false,
-        removed: false
-    };
+    var ths = this;
 
-    this._peers.push(info);
+    this._peers.set(peer, false);
     
-    peer.on('finish', function ()
-    {
-        if (!info.removed) // optimisation - won't be in peers if already removed
-        {
-            ths.remove_peer(peer);
-        }
-    });
-
-    peer.on('error', function (err)
-    {
-        if (!info.removed) // optimisation - won't be in peers if already removed
-        {
-            ths.remove_peer(peer);
-        }
-
-        ths.emit('error', err, peer);
-    });
+    peer.on('finish', this._finish);
+    peer.on('error', this._error);
 };
 
 /**
@@ -177,34 +166,29 @@ Remove a peer [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#strea
 
 FastestWritable.prototype.remove_peer = function (peer, end)
 {
-    var i, info;
-
-    for (i = 0; i < this._peers.length; i += 1)
+    if (this._peers.has(peer))
     {
-        info = this._peers[i];
-
-        if (info.peer === peer)
-        {
-            return this._end_peer(i, info, end, false);
-        }
+        this._end_peer(peer, end, false);
     }
 };
 
-FastestWritable.prototype._end_peer = function (i, info, end, laggard)
+FastestWritable.prototype._end_peer = function (peer, end, laggard)
 {
-    this._peers.splice(i, 1);
-    info.removed = true;
+    this._peers.delete(peer);
 
     if (laggard)
     {
-        info.peer.emit('laggard');
+        peer.emit('laggard');
     }
     else if (end !== false)
     {
-        info.peer.end();
+        peer.end();
     }
 
-    if (this._peers.length === 0)
+    peer.removeListener('finish', this._finish);
+    peer.removeListener('error', this._error);
+
+    if (this._peers.size === 0)
     {
         this.emit('empty');
     }
@@ -212,7 +196,7 @@ FastestWritable.prototype._end_peer = function (i, info, end, laggard)
 
 FastestWritable.prototype._write = function (chunk, encoding, cb)
 {
-    var ths = this, num_peers, num_waiting = 0, i, info, drain;
+    var ths = this, num_waiting = 0;
 
     function callback()
     {
@@ -232,55 +216,45 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
         }
     }
 
-    function make_drain(info)
+    function drain()
     {
-        var f, waiting_for = 1;
+        num_waiting -= 1;
 
-        f = function ()
+        this.removeListener('drain', drain);
+        this.removeListener('finish', drain);
+
+        if (!ths._peers.has(this))
         {
-            num_waiting -= waiting_for;
-            waiting_for = 0;
-
-            info.peer.removeListener('drain', f);
-            info.peer.removeListener('finish', f);
-
-            if (info.removed)
+            if (num_waiting === 0)
             {
-                if (num_waiting === 0)
-                {
-                    ready();
-                }
-
-                return; // doesn't mean it's ready for data!
+                ready();
             }
 
-            info.waiting = false;
-            ready();
-        };
-        
-        return f;
+            return; // doesn't mean it's ready for data!
+        }
+
+        ths._peers.set(this, false);
+        ready();
     }
 
-    for (i = 0; i < this._peers.length; i += 1)
+    for (var info of this._peers)
     {
-        info = this._peers[i];
+        var peer = info[0], waiting = info[1];
 
-        if (info.waiting)
+        if (waiting)
         {
-            this._end_peer(i, info, true, this._options.emit_laggard);
-            i -= 1; // info has been removed from this._peers
+            this._end_peer(peer, true, this._options.emit_laggard);
         }
-        else if (!info.peer.write(chunk, encoding))
+        else if (!peer.write(chunk, encoding))
         {
             num_waiting += 1;
-            info.waiting = true;
-            drain = make_drain(info);
-            info.peer.on('drain', drain);
-            info.peer.on('finish', drain);
+            this._peers.set(peer, true);
+            peer.on('drain', drain);
+            peer.on('finish', drain);
         }
     }
 
-    num_peers = this._peers.length;
+    var num_peers = this._peers.size;
 
     if ((num_peers === 0) || (num_waiting < num_peers))
     {

@@ -1,6 +1,5 @@
 /*global describe: false,
          it: false */
-/*jslint node: true, nomen: true */
 "use strict";
 
 describe('example', function ()

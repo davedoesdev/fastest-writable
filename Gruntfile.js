@@ -1,4 +1,3 @@
-/*jslint node: true */
 "use strict";
 
 module.exports = function (grunt)
@@ -6,7 +5,11 @@ module.exports = function (grunt)
     grunt.initConfig(
     {
         jshint: {
-            src: [ '*.js', 'test/**/*.js' ]
+            src: [ '*.js', 'test/**/*.js' ],
+            options: {
+                node: true,
+                esversion: 6
+            }
         },
 
         mochaTest: {

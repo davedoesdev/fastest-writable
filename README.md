@@ -5,7 +5,6 @@ Node.js [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_clas
 - Alternative to [`readable.pipe`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_readable_pipe_destination_options) which goes at the rate of the slowest peer.
 - Peers which aren't drained when a write occurs are ended.
 - With no peers added, `fastest-writable` consumes data as fast as it is written and throws it away.
-- Requires Node 0.11 (stream behaviour seems to change between every release and I'm targetting 0.12).
 - Full set of unit tests with 100% coverage.
 
 Example:

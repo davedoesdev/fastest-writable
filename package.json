@@ -1,7 +1,7 @@
 {
   "name": "fastest-writable",
   "description": "Node.js Writable stream which goes at the speed of its fastest peer and ends peers which can't keep up",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "homepage": "https://github.com/davedoesdev/fastest-writable",
   "author": {
     "name": "David Halls",
@@ -30,7 +30,7 @@
     "high-water mark"
   ],
   "engines": {
-    "node": ">= 0.11.13"
+    "node": ">= 0.12"
   },
   "devDependencies": {
     "grunt": "~1.0.1",

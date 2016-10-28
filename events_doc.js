@@ -1,5 +1,4 @@
 /*global FastestWritable: false */
-/*jslint node: true, unparam: true */
 "use strict";
 /**
 `empty` event
