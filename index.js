@@ -220,6 +220,7 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
     {
         num_waiting -= 1;
 
+        /*jshint validthis: true */
         this.removeListener('drain', drain);
         this.removeListener('finish', drain);
 
