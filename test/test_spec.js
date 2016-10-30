@@ -364,10 +364,17 @@ describe('pipe behaviour', function ()
 
         it('should propagate errors from peer', function (cb)
         {
-            fw.on('error', function (err, s)
+            var fw_msg;
+
+            fw.on('error', function (err)
+            {
+                fw_msg = err.message;
+            });
+
+            dest_stream1.on('error', function (err)
             {
                 expect(err.message).to.equal('there was an error');
-                expect(s).to.equal(dest_stream1);
+                expect(fw_msg).to.equal('there was an error');
                 cb();
             });
 
@@ -376,7 +383,7 @@ describe('pipe behaviour', function ()
 
         it('should not propagate errors from peer after peer has ended', function (cb)
         {
-            fw.on('error', function (err, s)
+            fw.on('error', function (err)
             {
                 cb(new Error('should not be called'));
             });
@@ -398,16 +405,59 @@ describe('pipe behaviour', function ()
             dest_stream1.end();
         });
 
-        /*it.only('should propagate errors to peer', function (cb)
+        it('should propagate errors to peer', function (cb)
         {
+            var dest1_msg, dest2_msg;
+
             dest_stream1.on('error', function (err)
             {
+                dest1_msg = err.message;
+            });
+
+            dest_stream2.on('error', function (err)
+            {
+                dest2_msg = err.message;
+            });
+
+            fw.on('error', function (err)
+            {
                 expect(err.message).to.equal('there was an error');
+                expect(dest1_msg).to.equal('there was an error');
+                expect(dest2_msg).to.equal('there was an error');
                 cb();
             });
 
             fw.emit('error', new Error('there was an error'));
-        });*/
+        });
+
+        it('should not propagate errors to peer after peer has ended', function (cb)
+        {
+            var dest2_msg;
+
+            dest_stream1.on('error', function (err)
+            {
+                cb(new Error('should not be called'));
+            });
+
+            dest_stream2.on('error', function (err)
+            {
+                dest2_msg = err.message;
+            });
+
+            dest_stream1.on('finish', function ()
+            {
+                fw.on('error', function (err)
+                {
+                    expect(err.message).to.equal('there was an error');
+                    expect(dest2_msg).to.equal('there was an error');
+                    setTimeout(cb, 500);
+                });
+
+                fw.emit('error', new Error('there was an error'));
+            });
+
+            dest_stream1.end();
+        });
 
         it('should handle peers finishing', function ()
         {

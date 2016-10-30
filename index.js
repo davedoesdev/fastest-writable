@@ -129,9 +129,18 @@ function FastestWritable(options)
         ths.remove_peer(this, false);
     };
 
-    this._error = function (err)
+    this._orig_emit = this.emit;
+    this.emit = function (type)
     {
-        ths.emit('error', err, this);
+        if (type === 'error')
+        {
+            for (var peer of ths._peers.keys())
+            {
+                peer._fastest_writable_orig_emit.apply(peer, arguments);
+            }
+        }
+
+        return this._orig_emit.apply(this, arguments);
     };
 }
 
@@ -153,7 +162,17 @@ FastestWritable.prototype.add_peer = function (peer)
     this._peers.set(peer, false);
     
     peer.on('finish', this._finish);
-    peer.on('error', this._error);
+
+    peer._fastest_writable_orig_emit = peer.emit;
+    peer.emit = function (type)
+    {
+        if (type === 'error')
+        {
+            ths._orig_emit.apply(ths, arguments);
+        }
+
+        return this._fastest_writable_orig_emit.apply(this, arguments);
+    };
 };
 
 /**
@@ -186,7 +205,7 @@ FastestWritable.prototype._end_peer = function (peer, end, laggard)
     }
 
     peer.removeListener('finish', this._finish);
-    peer.removeListener('error', this._error);
+    peer.emit = peer._fastest_writable_orig_emit;
 
     if (this._peers.size === 0)
     {
