@@ -34,3 +34,12 @@ A `FastestWritable` object emits a `ready` event when one of its peers drains. I
 @param {Function} drain Call this function to let the `FastestWritble` object drain without waiting for any more of its peers to drain. It's safe to call `drain` more than once.
 */
 FastestWritable.events.ready = function (num_waiting, total, drain) { return undefined; };
+
+/**
+`laggard` event
+
+A `FastestWritable` object emits a `laggard` event when one of its peers can't keep up, if `emit_laggard` was passed to the constructor. Note a `laggard` event is also emitted on the peer.
+
+@param {stream.Writable} peer Peer `Writable` which can't keep up.
+*/
+FastestWritable.events.laggard = function (peer) { return undefined; };

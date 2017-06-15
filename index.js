@@ -197,6 +197,7 @@ FastestWritable.prototype._end_peer = function (peer, end, laggard)
 
     if (laggard)
     {
+        this.emit('laggard', peer);
         peer.emit('laggard');
     }
     else if (end !== false)

@@ -76,6 +76,7 @@ grunt lint
 - <a name="toc_fastestwritableeventsempty"></a><a name="toc_fastestwritableevents"></a>[FastestWritable.events.empty](#fastestwritableeventsempty)
 - <a name="toc_fastestwritableeventswaitingstop_waiting"></a>[FastestWritable.events.waiting](#fastestwritableeventswaitingstop_waiting)
 - <a name="toc_fastestwritableeventsreadynum_waiting-total-drain"></a>[FastestWritable.events.ready](#fastestwritableeventsreadynum_waiting-total-drain)
+- <a name="toc_fastestwritableeventslaggardpeer"></a>[FastestWritable.events.laggard](#fastestwritableeventslaggardpeer)
 
 ## FastestWritable([options])
 
@@ -158,6 +159,18 @@ A `FastestWritable` object emits a `ready` event when one of its peers drains. I
 - `{Integer} num_waiting` Number of peers which still haven't drained for the latest data written to the `FastestWritable` object. 
 - `{Integer} total` Number of peers which received the latest data written to the `FastestWritable` object. 
 - `{Function} drain` Call this function to let the `FastestWritble` object drain without waiting for any more of its peers to drain. It's safe to call `drain` more than once.
+
+<sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
+
+## FastestWritable.events.laggard(peer)
+
+> `laggard` event
+
+A `FastestWritable` object emits a `laggard` event when one of its peers can't keep up, if `emit_laggard` was passed to the constructor. Note a `laggard` event is also emitted on the peer.
+
+**Parameters:**
+
+- `{stream.Writable} peer` Peer `Writable` which can't keep up.
 
 <sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
 

@@ -540,8 +540,16 @@ describe('pipe behaviour', function ()
             fw.add_peer(dest_stream1);
             fw.add_peer(dest_stream2);
 
+            var fw_laggard = false;
+            fw.on('laggard', function (stream)
+            {
+                expect(stream).to.equal(dest_stream2);
+                fw_laggard = true;
+            });
+
             dest_stream2.on('laggard', function ()
             {
+                expect(fw_laggard).to.equal(true);
                 process.nextTick(function ()
                 {
                     expr(expect(dest_stream2._writableState.ended).to.be.false);
