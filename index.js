@@ -83,10 +83,9 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 @extends Writable
 
 @param {Object} [options] Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
+- `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
 
-  - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
-
-  - `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any peers which can't keep up _instead of_ ending them. Defaults to `false`.
+- `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any peers which can't keep up _instead of_ ending them. Defaults to `false`.
 */
 
 function FastestWritable(options)
@@ -182,7 +181,6 @@ Remove a peer [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#strea
 
 @param {Boolean} end Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on the peer once it's been removed from the list. Defaults to `true`.
 */
-
 FastestWritable.prototype.remove_peer = function (peer, end)
 {
     if (this._peers.has(peer))
