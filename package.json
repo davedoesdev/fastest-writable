@@ -30,7 +30,7 @@
     "high-water mark"
   ],
   "engines": {
-    "node": ">= 4"
+    "node": ">= 6"
   },
   "devDependencies": {
     "grunt": "^1.0.4",
