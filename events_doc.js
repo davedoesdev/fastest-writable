@@ -43,3 +43,21 @@ A `FastestWritable` object emits a `laggard` event when one of its peers can't k
 @param {stream.Writable} peer Peer `Writable` which can't keep up.
 */
 FastestWritable.events.laggard = function (peer) { return undefined; };
+
+/**
+`peer_added` event
+
+A `FastestWritable` object emits a `peer_added` event when a peer has been added to the list of peers to which data will be written.
+
+@param {stream.Writable} peer Peer added.
+*/
+FastestWritable.events.peer_added = function (peer) { return undefined; };
+
+/**
+`peer_removed` event
+
+A `FastestWritable` object emits a `peer_removed` event when a peer has been removed from the list of peers to which data will be written.
+
+@param {stream.Writable} peer Peer removed.
+*/
+FastestWritable.events.peer_removed = function (peer) { return undefined; };

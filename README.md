@@ -77,6 +77,8 @@ grunt lint
 - <a name="toc_fastestwritableeventswaitingstop_waiting"></a>[FastestWritable.events.waiting](#fastestwritableeventswaitingstop_waiting)
 - <a name="toc_fastestwritableeventsreadynum_waiting-total-drain"></a>[FastestWritable.events.ready](#fastestwritableeventsreadynum_waiting-total-drain)
 - <a name="toc_fastestwritableeventslaggardpeer"></a>[FastestWritable.events.laggard](#fastestwritableeventslaggardpeer)
+- <a name="toc_fastestwritableeventspeer_addedpeer"></a>[FastestWritable.events.peer_added](#fastestwritableeventspeer_addedpeer)
+- <a name="toc_fastestwritableeventspeer_removedpeer"></a>[FastestWritable.events.peer_removed](#fastestwritableeventspeer_removedpeer)
 
 ## FastestWritable([options])
 
@@ -171,6 +173,30 @@ A `FastestWritable` object emits a `laggard` event when one of its peers can't k
 **Parameters:**
 
 - `{stream.Writable} peer` Peer `Writable` which can't keep up.
+
+<sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
+
+## FastestWritable.events.peer_added(peer)
+
+> `peer_added` event
+
+A `FastestWritable` object emits a `peer_added` event when a peer has been added to the list of peers to which data will be written.
+
+**Parameters:**
+
+- `{stream.Writable} peer` Peer added.
+
+<sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
+
+## FastestWritable.events.peer_removed(peer)
+
+> `peer_removed` event
+
+A `FastestWritable` object emits a `peer_removed` event when a peer has been removed from the list of peers to which data will be written.
+
+**Parameters:**
+
+- `{stream.Writable} peer` Peer removed.
 
 <sub>Go: [TOC](#tableofcontents) | [FastestWritable.events](#toc_fastestwritableevents)</sub>
 

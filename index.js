@@ -172,6 +172,8 @@ FastestWritable.prototype.add_peer = function (peer)
 
         return this._fastest_writable_orig_emit.apply(this, arguments);
     };
+
+    this.emit('peer_added', peer);
 };
 
 /**
@@ -205,6 +207,8 @@ FastestWritable.prototype._end_peer = function (peer, end, laggard)
 
     peer.removeListener('finish', this._finish);
     peer.emit = peer._fastest_writable_orig_emit;
+
+    this.emit('peer_removed', peer);
 
     if (this._peers.size === 0)
     {

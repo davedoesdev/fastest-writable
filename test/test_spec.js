@@ -122,8 +122,14 @@ describe('pipe behaviour', function ()
             source_stream.pipe(fw);
 
             // add peers
+            var peers_added = [];
+            fw.on('peer_added', function (peer)
+            {
+                peers_added.push(peer);
+            });
             fw.add_peer(dest_stream1);
             fw.add_peer(dest_stream2);
+            expect(peers_added).to.eql([dest_stream1, dest_stream2]);
         });
 
         it('should go at the speed of its fastest peer', function ()
@@ -565,8 +571,16 @@ describe('pipe behaviour', function ()
 
         it('should support removing peers', function (cb)
         {
+            var peers_removed = [];
+            fw.on('peer_removed', function (peer)
+            {
+                peers_removed.push(peer);
+            });
+
             fw.on('empty', function ()
             {
+                expect(peers_removed).to.eql([dest_stream1, dest_stream2]);
+
                 // write to source
                 expr(expect(source_stream.write('first')).to.be.true);
 
