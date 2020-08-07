@@ -1,7 +1,7 @@
 {
   "name": "fastest-writable",
   "description": "Node.js Writable stream which goes at the speed of its fastest peer and ends peers which can't keep up",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "homepage": "https://github.com/davedoesdev/fastest-writable",
   "author": {
     "name": "David Halls",
@@ -33,15 +33,15 @@
     "node": ">= 6"
   },
   "devDependencies": {
-    "grunt": "^1.0.4",
+    "grunt": "^1.2.1",
     "grunt-contrib-jshint": "^2.1.0",
     "grunt-mocha-test": "^0.13.3",
-    "grunt-apidox": "^2.0.5",
+    "grunt-apidox": "^2.0.9",
     "grunt-shell": "^3.0.1",
-    "mocha": "^6.1.4",
+    "mocha": "^8.1.1",
     "chai": "^4.2.0",
-    "nyc": "^14.1.1",
-    "coveralls": "^3.0.4",
-    "sinon": "^7.3.2"
+    "nyc": "^15.1.0",
+    "coveralls": "^3.1.0",
+    "sinon": "^9.0.2"
   }
 }

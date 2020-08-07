@@ -465,40 +465,47 @@ describe('pipe behaviour', function ()
             dest_stream1.end();
         });
 
-        it('should handle peers finishing', function ()
+        it('should handle peers finishing', function (cb)
         {
             dest_stream2.end();
 
-            // write to source
-            expr(expect(source_stream.write('first')).to.be.true);
+            process.nextTick(() => {
+                // write to source
+                expr(expect(source_stream.write('first')).to.be.true);
 
-            // check we got the data
-            expect(fw.write.callCount).to.equal(1);
-            expr(expect(fw.write.firstCall.returnValue).to.be.false);
-            expr(expect(fw.write.firstCall.calledWith(buffer('first'))).to.be.true);
+                // check we got the data
+                expect(fw.write.callCount).to.equal(1);
+                expr(expect(fw.write.firstCall.returnValue).to.be.false);
+                expr(expect(fw.write.firstCall.calledWith(buffer('first'))).to.be.true);
 
-            expect(dest_stream1.write.callCount).to.equal(1);
-            expr(expect(dest_stream1.write.firstCall.returnValue).to.be.false);
-            expr(expect(dest_stream1.write.firstCall.calledWith(buffer('first'))).to.be.true);
-            expect(dest_stream1.callbacks.length).to.equal(1);
+                expect(dest_stream1.write.callCount).to.equal(1);
+                expr(expect(dest_stream1.write.firstCall.returnValue).to.be.false);
+                expr(expect(dest_stream1.write.firstCall.calledWith(buffer('first'))).to.be.true);
+                expect(dest_stream1.callbacks.length).to.equal(1);
 
-            // check we're no longer writing to dest_stream2
-            expect(dest_stream2.write.callCount).to.equal(0);
+                // check we're no longer writing to dest_stream2
+                expect(dest_stream2.write.callCount).to.equal(0);
+
+                cb();
+            });
         });
 
         it('should end all peers when it ends', function ()
         {
             fw.end();
-            expr(expect(finished1).to.be.true);
-            expr(expect(finished2).to.be.true);
 
-            // write to source
-            expr(expect(source_stream.write('first')).to.be.true);
+            process.nextTick(() => process.nextTick(() => {
+                expr(expect(finished1).to.be.true);
+                expr(expect(finished2).to.be.true);
 
-            // check we didn't get the data
-            expect(fw.write.callCount).to.equal(0);
-            expect(dest_stream1.write.callCount).to.equal(0);
-            expect(dest_stream2.write.callCount).to.equal(0);
+                // write to source
+                expr(expect(source_stream.write('first')).to.be.true);
+
+                // check we didn't get the data
+                expect(fw.write.callCount).to.equal(0);
+                expect(dest_stream1.write.callCount).to.equal(0);
+                expect(dest_stream2.write.callCount).to.equal(0);
+            }));
         });
 
         it('should support not ending all peers when it ends', function ()
@@ -518,16 +525,19 @@ describe('pipe behaviour', function ()
             fw.add_peer(dest_stream2);
 
             fw.end();
-            expr(expect(finished1).to.be.false);
-            expr(expect(finished2).to.be.false);
 
-            // write to source
-            expr(expect(source_stream.write('first')).to.be.true);
+            process.nextTick(() => process.nextTick(() => {
+                expr(expect(finished1).to.be.false);
+                expr(expect(finished2).to.be.false);
 
-            // check we didn't get the data
-            expect(fw.write.callCount).to.equal(0);
-            expect(dest_stream1.write.callCount).to.equal(0);
-            expect(dest_stream2.write.callCount).to.equal(0);
+                // write to source
+                expr(expect(source_stream.write('first')).to.be.true);
+
+                // check we didn't get the data
+                expect(fw.write.callCount).to.equal(0);
+                expect(dest_stream1.write.callCount).to.equal(0);
+                expect(dest_stream2.write.callCount).to.equal(0);
+            }));
         });
 
         it('should support emitting laggard event instead of ending peer', function (cb)
@@ -689,11 +699,13 @@ describe('pipe behaviour', function ()
         {
             fw.on('waiting', function ()
             {
-                fw.on('drain', cb);
-                dest_stream1.end();
-                dest_stream2.end();
-                dest_stream1.callbacks[0]();
-                dest_stream2.callbacks[0]();
+                process.nextTick(() => {
+                    fw.on('drain', cb);
+                    dest_stream1.end();
+                    dest_stream2.end();
+                    dest_stream1.callbacks[0]();
+                    dest_stream2.callbacks[0]();
+                });
             });
 
             // write to source

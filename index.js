@@ -185,6 +185,10 @@ Remove a peer [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#strea
 */
 FastestWritable.prototype.remove_peer = function (peer, end)
 {
+    // From Node 14, 'finish' event is not emitted synchronously.
+    // So when we end() the peer in _end_peer(), _remove_peer() isn't called
+    // because we remove the 'finish' listener before the event is emitted.
+    // istanbul ignore else
     if (this._peers.has(peer))
     {
         this._end_peer(peer, end, false);
@@ -282,7 +286,7 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
     if ((num_peers === 0) || (num_waiting < num_peers))
     {
         // at least one peer is ready or there are no peers
-        return ready();
+        return process.nextTick(ready);
     }
 
     this.emit('waiting', callback);

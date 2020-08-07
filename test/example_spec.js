@@ -11,8 +11,8 @@ describe('example', function ()
             FastestWritable = require('..').FastestWritable,
             source = new stream.PassThrough(),
             fw = new FastestWritable(),
-            dest1 = new stream.PassThrough({ highWaterMark: 1 }),
-            dest2 = new stream.PassThrough({ highWaterMark: 1 });
+            dest1 = new stream.PassThrough({ highWaterMark: 0 }),
+            dest2 = new stream.PassThrough({ highWaterMark: 0 });
 
         source.pipe(fw);
         fw.add_peer(dest1);
