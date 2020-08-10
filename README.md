@@ -56,7 +56,7 @@ grunt test
 grunt coverage
 ```
 
-[Instanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://rawgit.davedoesdev.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
+[Istanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://rawgit.davedoesdev.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
 
 Coveralls page is [here](https://coveralls.io/r/davedoesdev/fastest-writable).
 
