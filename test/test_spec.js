@@ -94,7 +94,7 @@ describe('pipe behaviour', function ()
 
     describe('FastestWritable', function ()
     {
-        var fw, finished1, finished2;
+        var fw, finished1, finished2, closed1, closed2;
 
         beforeEach(function ()
         {
@@ -112,6 +112,19 @@ describe('pipe behaviour', function ()
             dest_stream2.on('finish', function ()
             {
                 finished2 = true;
+            });
+
+            // watch for closed event
+            closed1 = false;
+            dest_stream1.on('close', function ()
+            {
+                closed1 = true;
+            });
+
+            closed2 = false;
+            dest_stream2.on('close', function ()
+            {
+                closed2 = true;
             });
 
             // watch end method
@@ -212,7 +225,7 @@ describe('pipe behaviour', function ()
             expect(dest_stream2.write.callCount).to.equal(1);
         });
 
-        it('should copy with more than one peer draining', function ()
+        it('should cope with more than one peer draining', function ()
         {
             // write to source
             expr(expect(source_stream.write('first')).to.be.true);
@@ -490,7 +503,7 @@ describe('pipe behaviour', function ()
             });
         });
 
-        it('should end all peers when it ends', function ()
+        it('should end all peers when it ends', function (cb)
         {
             fw.end();
 
@@ -505,10 +518,12 @@ describe('pipe behaviour', function ()
                 expect(fw.write.callCount).to.equal(0);
                 expect(dest_stream1.write.callCount).to.equal(0);
                 expect(dest_stream2.write.callCount).to.equal(0);
+
+                cb();
             }));
         });
 
-        it('should support not ending all peers when it ends', function ()
+        it('should support not ending all peers when it ends', function (cb)
         {
             source_stream.unpipe(fw);
             fw.remove_peer(dest_stream1, false);
@@ -537,6 +552,8 @@ describe('pipe behaviour', function ()
                 expect(fw.write.callCount).to.equal(0);
                 expect(dest_stream1.write.callCount).to.equal(0);
                 expect(dest_stream2.write.callCount).to.equal(0);
+
+                cb();
             }));
         });
 
@@ -884,6 +901,112 @@ describe('pipe behaviour', function ()
 
             source_stream2.pipe(fw);
             source_stream2.unpipe(fw);
+        });
+
+        it("should destroy all peers when it's destroyed", function (cb)
+        {
+            fw.destroy();
+
+            process.nextTick(() => {
+                expect(closed1).to.equal(true);
+                expect(closed2).to.equal(true);
+
+                expect(dest_stream1.destroyed).to.equal(true);
+                expect(dest_stream2.destroyed).to.equal(true);
+
+                cb();
+            });
+        });
+
+        it('should pass on error when destroying', function (cb)
+        {
+            let fw_err = false;
+            let dest1_err = false;
+            let dest2_err = false;
+
+            fw.on('error', err => {
+                expect(err.message).to.equal('dummy');
+                fw_err = true;
+            });
+
+            dest_stream1.on('error', err => {
+                expect(err.message).to.equal('dummy');
+                dest1_err = true;
+            });
+
+            dest_stream2.on('error', err => {
+                expect(err.message).to.equal('dummy');
+                dest2_err = true;
+            });
+
+            fw.destroy(new Error('dummy'));
+
+            process.nextTick(() => {
+                expect(closed1).to.equal(true);
+                expect(closed2).to.equal(true);
+
+                expect(dest_stream1.destroyed).to.equal(true);
+                expect(dest_stream2.destroyed).to.equal(true);
+
+                expect(fw_err).to.equal(true);
+                expect(dest1_err).to.equal(true);
+                expect(dest2_err).to.equal(true);
+
+                cb();
+            });
+        });
+
+        it("should support not destroying all peers when it's destroyed", function (cb)
+        {
+            source_stream.unpipe(fw);
+            fw.remove_peer(dest_stream1, false);
+            fw.remove_peer(dest_stream2, false);
+
+            fw = new FastestWritable(
+            {
+                highWaterMark: 1,
+                destroy_peers_on_destroy: false
+            });
+            source_stream.pipe(fw);
+            fw.add_peer(dest_stream1);
+            fw.add_peer(dest_stream2);
+
+            fw.destroy();
+
+            process.nextTick(() => {
+                expect(closed1).to.equal(false);
+                expect(closed2).to.equal(false);
+
+                expect(dest_stream1.destroyed).to.equal(false);
+                expect(dest_stream2.destroyed).to.equal(false);
+
+                cb();
+            });
+        });
+
+        it('should handle peers closing', function (cb)
+        {
+            dest_stream2.destroy();
+
+            process.nextTick(() => {
+                // write to source
+                expect(source_stream.write('first')).to.equal(true);
+
+                // check we got the data
+                expect(fw.write.callCount).to.equal(1);
+                expect(fw.write.firstCall.returnValue).to.equal(false);
+                expect(fw.write.firstCall.calledWith(buffer('first'))).to.equal(true);
+
+                expect(dest_stream1.write.callCount).to.equal(1);
+                expect(dest_stream1.write.firstCall.returnValue).to.equal(false);
+                expect(dest_stream1.write.firstCall.calledWith(buffer('first'))).to.equal(true);
+                expect(dest_stream1.callbacks.length).to.equal(1);
+
+                // check we're no longer writing to dest_stream2
+                expect(dest_stream2.write.callCount).to.equal(0);
+
+                cb();
+            });
         });
     });
 });

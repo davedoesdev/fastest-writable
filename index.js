@@ -85,6 +85,8 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 @param {Object} [options] Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
 - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
 
+- `{Boolean} [destroy_peers_on_destroy]` Whether to call [`writable.destroy`](https://nodejs.org/dist/latest-v14.x/docs/api/stream.html#stream_writable_destroy_error) on all peers when this `FastestWritable` is destroyed. Defaults to `true`.
+
 - `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any peers which can't keep up _instead of_ ending them. Defaults to `false`.
 */
 
@@ -161,6 +163,7 @@ FastestWritable.prototype.add_peer = function (peer)
     this._peers.set(peer, false);
     
     peer.on('finish', this._finish);
+    peer.on('close', this._finish);
 
     peer._fastest_writable_orig_emit = peer.emit;
     peer.emit = function (type)
@@ -290,6 +293,19 @@ FastestWritable.prototype._write = function (chunk, encoding, cb)
     }
 
     this.emit('waiting', callback);
+};
+
+FastestWritable.prototype._destroy = function (err, cb)
+{
+    if (this._options.destroy_peers_on_destroy !== false)
+    {
+        for (var peer of this._peers.keys())
+        {
+            peer.destroy(err);
+        }
+    }
+
+    cb();
 };
 
 exports.FastestWritable = FastestWritable;
