@@ -305,7 +305,7 @@ FastestWritable.prototype._destroy = function (err, cb)
         }
     }
 
-    cb();
+    cb(err);
 };
 
 exports.FastestWritable = FastestWritable;
