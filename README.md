@@ -56,7 +56,7 @@ grunt test
 grunt coverage
 ```
 
-[Istanbul](http://gotwarlost.github.io/istanbul/) results are available [here](http://rawgit.davedoesdev.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
+[c8](https://github.com/bcoe/c8) results are available [here](http://rawgit.davedoesdev.com/davedoesdev/fastest-writable/master/coverage/lcov-report/index.html).
 
 Coveralls page is [here](https://coveralls.io/r/davedoesdev/fastest-writable).
 
@@ -90,6 +90,8 @@ Inherits from [`stream.Writable`](http://nodejs.org/docs/v0.11.13/api/stream.htm
 
 - `{Object} [options]` Configuration options. This is passed onto `Writable`'s constructor and can contain the following extra property:
   - `{Boolean} [end_peers_on_finish]` Whether to call [`writable.end`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_writable_end_chunk_encoding_callback) on all peers when this `FastestWritable` object emits a [`finish`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_event_finish) event. Defaults to `true`.
+
+  - `{Boolean} [destroy_peers_on_destroy]` Whether to call [`writable.destroy`](https://nodejs.org/dist/latest-v14.x/docs/api/stream.html#stream_writable_destroy_error) on all peers when this `FastestWritable` is destroyed. Defaults to `true`.
 
   - `{Boolean} [emit_laggard]` Whether to emit an event named `laggard` on any peers which can't keep up _instead of_ ending them. Defaults to `false`.
 
