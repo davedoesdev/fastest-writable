@@ -70,25 +70,29 @@ describe('pipe behaviour', function ()
             dest_stream1.callbacks[0]();
 
             // check we didn't get the data (source waits for all drains)
-            expect(dest_stream1.write.callCount).to.equal(1);
-            expect(dest_stream1.callbacks.length).to.equal(1);
+            process.nextTick(() => { // Note: Writable.afterWrite uses nextTick
+                expect(dest_stream1.write.callCount).to.equal(1);
+                expect(dest_stream1.callbacks.length).to.equal(1);
 
-            expect(dest_stream2.write.callCount).to.equal(1);
-            expect(dest_stream2.callbacks.length).to.equal(1);
+                expect(dest_stream2.write.callCount).to.equal(1);
+                expect(dest_stream2.callbacks.length).to.equal(1);
 
-            // drain the other destination stream
-            dest_stream2.callbacks[0]();
+                // drain the other destination stream
+                dest_stream2.callbacks[0]();
 
-            // check we got the data now both streams have drained
-            expect(dest_stream1.write.callCount).to.equal(2);
-            expr(expect(dest_stream1.write.secondCall.returnValue).to.be.false);
-            expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
-            expect(dest_stream1.callbacks.length).to.equal(2);
+                // check we got the data now both streams have drained
+                process.nextTick(() => {
+                    expect(dest_stream1.write.callCount).to.equal(2);
+                    expr(expect(dest_stream1.write.secondCall.returnValue).to.be.false);
+                    expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    expect(dest_stream1.callbacks.length).to.equal(2);
 
-            expect(dest_stream2.write.callCount).to.equal(2);
-            expr(expect(dest_stream2.write.secondCall.returnValue).to.be.false);
-            expr(expect(dest_stream2.write.secondCall.calledWith(buffer('second'))).to.be.true);
-            expect(dest_stream2.callbacks.length).to.equal(2);
+                    expect(dest_stream2.write.callCount).to.equal(2);
+                    expr(expect(dest_stream2.write.secondCall.returnValue).to.be.false);
+                    expr(expect(dest_stream2.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    expect(dest_stream2.callbacks.length).to.equal(2);
+                });
+            });
         });
     });
 
@@ -181,48 +185,56 @@ describe('pipe behaviour', function ()
             dest_stream1.callbacks[0]();
 
             // check we got the data (FastestWritable waits for any drain)
-            expect(fw.write.callCount).to.equal(2);
-            expr(expect(fw.write.secondCall.returnValue).to.be.false);
-            expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
+            process.nextTick(() => {
+                expect(fw.write.callCount).to.equal(2);
+                expr(expect(fw.write.secondCall.returnValue).to.be.false);
+                expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
 
-            expect(dest_stream1.write.callCount).to.equal(2);
-            expr(expect(dest_stream1.write.secondCall.returnValue).to.be.false);
-            expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
-            expect(dest_stream1.callbacks.length).to.equal(2);
+                expect(dest_stream1.write.callCount).to.equal(2);
+                expr(expect(dest_stream1.write.secondCall.returnValue).to.be.false);
+                expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                expect(dest_stream1.callbacks.length).to.equal(2);
 
-            // second stream should not have been called since it didn't drain
-            expect(dest_stream2.write.callCount).to.equal(1);
-            expect(dest_stream2.callbacks.length).to.equal(1);
+                // second stream should not have been called since it didn't drain
+                expect(dest_stream2.write.callCount).to.equal(1);
+                expect(dest_stream2.callbacks.length).to.equal(1);
 
-            // check the second stream has been ended
-            expect(dest_stream2.end.callCount).to.equal(1);
-            expr(expect(finished2).to.be.false); // hasn't drained yet
+                // check the second stream has been ended
+                expect(dest_stream2.end.callCount).to.equal(1);
+                expr(expect(finished2).to.be.false); // hasn't drained yet
 
-            // check we don't carry on writing to the second stream
-            expr(expect(source_stream.write('third')).to.be.true);
-            expect(fw.write.callCount).to.equal(2);
-            expect(dest_stream1.write.callCount).to.equal(2);
-            expect(dest_stream2.write.callCount).to.equal(1);
-            dest_stream1.callbacks[0]();
-            expect(fw.write.callCount).to.equal(3);
-            expect(dest_stream1.write.callCount).to.equal(3);
-            expect(dest_stream2.write.callCount).to.equal(1);
+                // check we don't carry on writing to the second stream
+                expr(expect(source_stream.write('third')).to.be.true);
+                expect(fw.write.callCount).to.equal(2);
+                expect(dest_stream1.write.callCount).to.equal(2);
+                expect(dest_stream2.write.callCount).to.equal(1);
+                dest_stream1.callbacks[0]();
+                process.nextTick(() => {
+                    expect(fw.write.callCount).to.equal(3);
+                    expect(dest_stream1.write.callCount).to.equal(3);
+                    expect(dest_stream2.write.callCount).to.equal(1);
 
-            // drain the second stream and check we get finish event
-            dest_stream2.callbacks[0]();
-            // second write should still not be done
-            expect(dest_stream2.callbacks.length).to.equal(1);
-            expr(expect(finished2).to.be.true);
+                    // drain the second stream and check we get finish event
+                    dest_stream2.callbacks[0]();
+                    process.nextTick(() => {
+                        // second write should still not be done
+                        expect(dest_stream2.callbacks.length).to.equal(1);
+                        expr(expect(finished2).to.be.true);
 
-            // check we don't carry on writing to the second stream
-            expr(expect(source_stream.write('fourth')).to.be.true);
-            expect(fw.write.callCount).to.equal(3);
-            expect(dest_stream1.write.callCount).to.equal(3);
-            expect(dest_stream2.write.callCount).to.equal(1);
-            dest_stream1.callbacks[0]();
-            expect(fw.write.callCount).to.equal(4);
-            expect(dest_stream1.write.callCount).to.equal(4);
-            expect(dest_stream2.write.callCount).to.equal(1);
+                        // check we don't carry on writing to the second stream
+                        expr(expect(source_stream.write('fourth')).to.be.true);
+                        expect(fw.write.callCount).to.equal(3);
+                        expect(dest_stream1.write.callCount).to.equal(3);
+                        expect(dest_stream2.write.callCount).to.equal(1);
+                        dest_stream1.callbacks[0]();
+                        process.nextTick(() => {
+                            expect(fw.write.callCount).to.equal(4);
+                            expect(dest_stream1.write.callCount).to.equal(4);
+                            expect(dest_stream2.write.callCount).to.equal(1);
+                        });
+                    });
+                });
+            });
         });
 
         it('should cope with more than one peer draining', function ()
@@ -297,29 +309,33 @@ describe('pipe behaviour', function ()
             // get dest_stream1 ready again
             dest_stream1.callbacks[0]();
 
-            // check we didn't get the data this time (the source is awaiting drain which is done in process.nextTick)
-            expect(fw.write.callCount).to.equal(1);
+            process.nextTick(() => {
+                // check we didn't get the data this time (the source is awaiting drain which is done in process.nextTick)
+                expect(fw.write.callCount).to.equal(1);
 
-            process.nextTick(function ()
-            {
-                // fw should now have drained
-                expect(fw.write.callCount).to.equal(2);
-                // above hwm for fw
-                expr(expect(fw.write.secondCall.returnValue).to.be.false);
-                expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                process.nextTick(function ()
+                {
+                    // fw should now have drained
+                    expect(fw.write.callCount).to.equal(2);
+                    // above hwm for fw
+                    expr(expect(fw.write.secondCall.returnValue).to.be.false);
+                    expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
 
-                expect(dest_stream1.write.callCount).to.equal(2);
-                expr(expect(dest_stream1.write.secondCall.returnValue).to.be.true);
-                expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
-                expect(dest_stream1.callbacks.length).to.equal(2);
+                    expect(dest_stream1.write.callCount).to.equal(2);
+                    expr(expect(dest_stream1.write.secondCall.returnValue).to.be.true);
+                    expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    expect(dest_stream1.callbacks.length).to.equal(2);
 
-                // drain the second stream and check we get finish event
-                dest_stream2.callbacks[0]();
-                // second write should still not be done
-                expect(dest_stream2.callbacks.length).to.equal(1);
-                expr(expect(finished2).to.be.true);
+                    // drain the second stream and check we get finish event
+                    dest_stream2.callbacks[0]();
+                    process.nextTick(() => {
+                        // second write should still not be done
+                        expect(dest_stream2.callbacks.length).to.equal(1);
+                        expr(expect(finished2).to.be.true);
 
-                cb();
+                        cb();
+                    });
+                });
             });
         });
 
@@ -354,30 +370,32 @@ describe('pipe behaviour', function ()
             dest_stream1.callbacks[0]();
             dest_stream2.callbacks[0]();
 
-            // check we didn't get the data this time (the source is awaiting drain which is done in process.nextTick)
-            expect(fw.write.callCount).to.equal(1);
+            process.nextTick(() => {
+                // check we didn't get the data this time (the source is awaiting drain which is done in process.nextTick)
+                expect(fw.write.callCount).to.equal(1);
 
-            process.nextTick(function ()
-            {
-                // fw should now have drained
-                expect(fw.write.callCount).to.equal(2);
-                // above hwm for fw
-                expr(expect(fw.write.secondCall.returnValue).to.be.false);
-                expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                process.nextTick(function ()
+                {
+                    // fw should now have drained
+                    expect(fw.write.callCount).to.equal(2);
+                    // above hwm for fw
+                    expr(expect(fw.write.secondCall.returnValue).to.be.false);
+                    expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
 
-                expect(dest_stream1.write.callCount).to.equal(2);
-                expr(expect(dest_stream1.write.secondCall.returnValue).to.be.true);
-                expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
-                expect(dest_stream1.callbacks.length).to.equal(2);
+                    expect(dest_stream1.write.callCount).to.equal(2);
+                    expr(expect(dest_stream1.write.secondCall.returnValue).to.be.true);
+                    expr(expect(dest_stream1.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    expect(dest_stream1.callbacks.length).to.equal(2);
 
-                expect(dest_stream2.write.callCount).to.equal(2);
-                expr(expect(dest_stream2.write.secondCall.returnValue).to.be.true);
-                expr(expect(dest_stream2.write.secondCall.calledWith(buffer('second'))).to.be.true);
-                expect(dest_stream2.callbacks.length).to.equal(2);
+                    expect(dest_stream2.write.callCount).to.equal(2);
+                    expr(expect(dest_stream2.write.secondCall.returnValue).to.be.true);
+                    expr(expect(dest_stream2.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    expect(dest_stream2.callbacks.length).to.equal(2);
 
-                expr(expect(finished2).to.be.false);
+                    expr(expect(finished2).to.be.false);
 
-                cb();
+                    cb();
+                });
             });
         });
 
@@ -593,7 +611,9 @@ describe('pipe behaviour', function ()
             // write to source
             expr(expect(source_stream.write('first')).to.be.true);
             dest_stream1.callbacks[0]();
-            expr(expect(source_stream.write('second')).to.be.true);
+            process.nextTick(() => {
+                expr(expect(source_stream.write('second')).to.be.true);
+            });
         });
 
         it('should support removing peers', function (cb)
@@ -662,25 +682,29 @@ describe('pipe behaviour', function ()
                     // force drain without waiting for peers
                     stop_waiting();
 
-                    // check we got the data
-                    expect(fw.write.callCount).to.equal(2);
-                    // above hwm for fw
-                    expr(expect(fw.write.secondCall.returnValue).to.be.false);
-                    expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
+                    process.nextTick(() => {
+                        // check we got the data
+                        expect(fw.write.callCount).to.equal(2);
+                        // above hwm for fw
+                        expr(expect(fw.write.secondCall.returnValue).to.be.false);
+                        expr(expect(fw.write.secondCall.calledWith(buffer('second'))).to.be.true);
 
-                    // check peers didn't get the data
-                    expect(dest_stream1.write.callCount).to.equal(1);
-                    expect(dest_stream2.write.callCount).to.equal(1);
+                        // check peers didn't get the data
+                        expect(dest_stream1.write.callCount).to.equal(1);
+                        expect(dest_stream2.write.callCount).to.equal(1);
 
-                    // drain the peers
-                    dest_stream1.callbacks[0]();
-                    dest_stream2.callbacks[0]();
+                        // drain the peers
+                        dest_stream1.callbacks[0]();
+                        dest_stream2.callbacks[0]();
 
-                    // check peers have been ended
-                    expr(expect(finished1).to.be.true);
-                    expr(expect(finished2).to.be.true);
+                        process.nextTick(() => {
+                            // check peers have been ended
+                            expr(expect(finished1).to.be.true);
+                            expr(expect(finished2).to.be.true);
 
-                    cb();
+                            cb();
+                        });
+                    });
                 }, 1000);
             });
 
@@ -748,10 +772,12 @@ describe('pipe behaviour', function ()
                         expr(expect(source_stream.write('second')).to.be.true);
                         expect(fw.write.callCount).to.equal(1);
                         done2();
-                        process.nextTick(function ()
-                        {
-                            expect(fw.write.callCount).to.equal(2);
-                            cb();
+                        process.nextTick(() => { // afterWrite tick
+                            process.nextTick(function () // drain tick
+                            {
+                                expect(fw.write.callCount).to.equal(2);
+                                cb();
+                            });
                         });
                     });
 
