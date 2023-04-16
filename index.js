@@ -1,5 +1,5 @@
 /**
-# fastest-writable&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/davedoesdev/fastest-writable.png)](https://travis-ci.org/davedoesdev/fastest-writable) [![Coverage Status](https://coveralls.io/repos/davedoesdev/fastest-writable/badge.png?branch=master)](https://coveralls.io/r/davedoesdev/fastest-writable?branch=master) [![NPM version](https://badge.fury.io/js/fastest-writable.png)](http://badge.fury.io/js/fastest-writable)
+# fastest-writable&nbsp;&nbsp;&nbsp;[![Build Status](https://github.com/davedoesdev/fastest-writable/actions/workflows/ci.yml/badge.svg)](https://github.com/davedoesdev/fastest-writable/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/davedoesdev/fastest-writable/badge.png?branch=master)](https://coveralls.io/r/davedoesdev/fastest-writable?branch=master) [![NPM version](https://badge.fury.io/js/fastest-writable.png)](http://badge.fury.io/js/fastest-writable)
 
 Node.js [`Writable`](http://nodejs.org/docs/v0.11.13/api/stream.html#stream_class_stream_writable) which goes at the speed of its fastest peer `Writable` and ends peers which can't keep up.
 
