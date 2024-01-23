@@ -1,13 +1,17 @@
 /*global beforeEach: false,
+         before: false,
          stream: false,
          util: false */
 "use strict";
 
 global.util = require('util');
 global.stream = require('stream');
-global.expect = require('chai').expect;
 global.sinon = require('sinon');
 global.FastestWritable = require('..').FastestWritable;
+
+before(async function () {
+    ({ expect: global.expect } = await import('chai'));
+});
 
 beforeEach(function ()
 {

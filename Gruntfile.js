@@ -10,7 +10,7 @@ module.exports = function (grunt)
             src: [ '*.js', 'test/**/*.js' ],
             options: {
                 node: true,
-                esversion: 6
+                esversion: 11
             }
         },
 
