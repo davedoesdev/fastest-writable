@@ -890,8 +890,10 @@ describe('pipe behaviour', function ()
                 dest_stream2.callbacks[0]();
 
                 // check peers have been ended
-                expr(expect(finished1).to.be.true);
-                expr(expect(finished2).to.be.true);
+                process.nextTick(() => {
+                    expr(expect(finished1).to.be.true);
+                    expr(expect(finished2).to.be.true);
+                });
             }, 2000);
         });
 
